@@ -1,0 +1,73 @@
+/******************************************************************************
+ * Product: Adempiere ERP & CRM Smart Business Solution                       *
+ * Copyright (C) 1999-2007 ComPiere, Inc. All Rights Reserved.                *
+ * This program is free software, you can redistribute it and/or modify it    *
+ * under the terms version 2 of the GNU General Public License as published   *
+ * by the Free Software Foundation. This program is distributed in the hope   *
+ * that it will be useful, but WITHOUT ANY WARRANTY, without even the implied *
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
+ * See the GNU General Public License for more details.                       *
+ * You should have received a copy of the GNU General Public License along    *
+ * with this program, if not, write to the Free Software Foundation, Inc.,    *
+ * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
+ * For the text or an alternative of this public license, you may reach us    *
+ * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
+ * or via info@compiere.org or http://www.compiere.org/license.html           *
+ *****************************************************************************/
+package org.pasta.model.validator;
+
+import java.util.Properties;
+
+import org.compiere.model.MInvoice;
+import org.compiere.model.ModelValidator;
+import org.compiere.model.PO;
+import org.compiere.util.Msg;
+import org.jfree.util.Log;
+import org.pasta.model.Validator;
+
+/**
+ * @function validation
+ * @package org.pasta.model.validator
+ * @classname InvoiceValidator
+ * @author Pasuwat Wang (CENS ONLINE SERVICES)
+ * @created Dec 7, 2018 1:40:06 PM
+ */
+public class InvoiceValidator extends POValidator implements Validator {
+	
+	Properties m_ctx ;
+
+	public InvoiceValidator(PO po) {
+		super(po);
+		
+		m_ctx = po.getCtx();
+	}
+
+	protected MInvoice getPO() {
+		if(this.po == null) {
+			return null;
+		}
+		
+		return (MInvoice)po;
+	}
+	
+	public String validate(int timming) {
+		Log.info("Invoice Validator Timming "+timming );
+		if(timming == ModelValidator.TIMING_BEFORE_VOID || timming == ModelValidator.TIMING_BEFORE_REVERSECORRECT) {
+			if(isPaidInvoice()) {
+				return Msg.getMsg(m_ctx, ErrMSg.ERR_INVOICE_WAS_PAID, null);
+			}
+		}
+		
+		return null;
+	}
+
+	private boolean isPaidInvoice() {
+		// TODO Auto-generated method stub
+		 MInvoice invoice = getPO();
+		 if(invoice == null)
+			 return false;
+		 
+		 return invoice.isPaid() || !invoice.getOpenAmt().equals(invoice.getGrandTotal());
+	}
+
+}
